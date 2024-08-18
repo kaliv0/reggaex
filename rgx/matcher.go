@@ -2,6 +2,7 @@ package rgx
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -10,26 +11,20 @@ func Match(expr, str string) (bool, int, int) {
 		return false, 0, 0
 	}
 
-	matched := false // TODO: do we need to explicitly initialize?
-	matchPos := 0    // main cursor on str
-	// maxMatchPos := 0 // TODO: shouldn't always be (len(string) - 1)?
-	maxMatchPos := len(str) - 1
+	matched := false
+	matchPos := -1 // main cursor on str
 	matchLen := 0
+	maxMatchPos := len(str) - 1
+	// TODO: elaborate
 	if isStart(expr[0]) {
 		expr = expr[1:]
+		maxMatchPos = 0 // in this case the cursor shouldn't go beyond the first char without matching
 	}
-	// else{
-	//     maxMatchPos = len(string) - 1 }// TODO: why
 
-	for matchPos <= maxMatchPos {
-		matched, matchLen = matchExpr(expr, str[matchPos:], 0)
-		if matched {
-			// return matched, matchPos, matchLen
-			break
-		}
+	for !matched && matchPos <= maxMatchPos {
 		matchPos += 1
+		matched, matchLen = matchExpr(expr, str[matchPos:], 0)
 	}
-
 	return matched, matchPos, matchLen
 }
 
@@ -37,11 +32,6 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 	if len(expr) == 0 {
 		return true, matchLen
 	} else if isEnd(expr[0]) {
-		// if len(str) == 0 {
-		// 	return true, matchLen
-		// } else {
-		// 	return false, 0
-		// }
 		return len(str) == 0, matchLen
 	}
 
@@ -60,7 +50,8 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 			return matchExpr(rest, str[1:], matchLen+1)
 		}
 	} else {
-		fmt.Printf("Unknown token in expr %s.", expr)
+		fmt.Printf("unknown token in expr %s", expr)
+		os.Exit(-1) // TODO: or return err?
 	}
 	return false, 0
 }
@@ -80,9 +71,6 @@ func matchQuestion(expr string, str string, matchLen int) (bool, int) {
 
 func matchMultiple(expr string, str string, matchLen int, minMatchLen int, maxMatchLen int) (bool, int) {
 	head, _, rest := splitExpr(expr)
-	// if !minMatchLen{
-	//     minMatchLen = 0
-	// }
 	submatchLen := -1
 	// TODO: check in which case (maxMatchLen == 0) is used
 	for maxMatchLen == 0 || (submatchLen < maxMatchLen) {

@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	// "github.com/kaliv0/buggy-regex-engine-in-go/rgx/matcher"
-	"bugger/rgx"
+	// "github.com/kaliv0/reggaex/rgx/matcher"
+	"reggaex/rgx"
 )
 
 // type Matcher struct {

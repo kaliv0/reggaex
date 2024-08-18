@@ -63,8 +63,7 @@ func isQuestion(b byte) bool {
 
 func isLiteral(b byte) bool {
 	return unicode.IsLetter(rune(b)) || unicode.IsDigit(rune(b)) || isNonWordSymbol(b)
-	// return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9')
-	// || (b == ' ' || b == ':' || b == '/')
+	//return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || (b == ' ' || b == ':' || b == '/')
 }
 
 func isNonWordSymbol(b byte) bool {

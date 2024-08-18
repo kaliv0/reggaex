@@ -7,6 +7,6 @@
 
 -rename expr -> pattern
 -add Matcher struct -> optimize passing strings
--add tests
+-add tests -> include partial matches (without "^" and "$")
 
 -specify in README working features, NB: only for ASCII -> bytes vs runes
