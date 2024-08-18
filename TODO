@@ -1,0 +1,12 @@
+-remove \a
+-add \w, \s, (whitespace characters)
+-add ranges [a-z], complex ones [a-z09]?
+-add negations -> \D, \S, \W, [^xyz]
+-add counts [a-z]{3} -> similar to operators
+-support \t, \n ??
+
+-rename expr -> pattern
+-add Matcher struct -> optimize passing strings
+-add tests
+
+-specify in README working features, NB: only for ASCII -> bytes vs runes
