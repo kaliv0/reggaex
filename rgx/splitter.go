@@ -16,8 +16,7 @@ func splitExpr(expr string) (string, byte, string) {
 		head = expr[:lastExprPos]
 	} else if isEscape(expr[0]) {
 		lastExprPos += 2
-		// head = expr[:2]
-		head = expr[:lastExprPos] // TODO: check
+		head = expr[:lastExprPos]
 	} else {
 		lastExprPos = 1
 		head = string(expr[0])
@@ -32,6 +31,10 @@ func splitExpr(expr string) (string, byte, string) {
 	return head, operator, rest
 }
 
-//func splitSet(setHead string) string {
-//	return setHead[1 : len(setHead)-1]
-//}
+func splitSet(head string) string {
+	return head[1 : len(head)-1]
+}
+
+func splitAlternate(head string) []string {
+	return strings.Split(head[1:len(head)-1], "|")
+}
