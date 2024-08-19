@@ -6,7 +6,11 @@ import (
 	"strings"
 )
 
-func Match(expr, str string) (bool, int, int) {
+type Matcher struct {
+	Expr string
+}
+
+func (m *Matcher) Match(expr, str string) (bool, int, int) {
 	if len(expr) == 0 || len(str) == 0 {
 		return false, 0, 0
 	}
@@ -15,7 +19,6 @@ func Match(expr, str string) (bool, int, int) {
 	matchPos := -1 // main cursor on str
 	matchLen := 0
 	maxMatchPos := len(str) - 1
-	// TODO: elaborate
 	if isStart(expr[0]) {
 		expr = expr[1:]
 		maxMatchPos = 0 // in this case the cursor shouldn't go beyond the first char without matching
@@ -23,12 +26,12 @@ func Match(expr, str string) (bool, int, int) {
 
 	for !matched && matchPos <= maxMatchPos {
 		matchPos += 1
-		matched, matchLen = matchExpr(expr, str[matchPos:], 0)
+		matched, matchLen = m.matchExpr(expr, str[matchPos:], 0)
 	}
 	return matched, matchPos, matchLen
 }
 
-func matchExpr(expr string, str string, matchLen int) (bool, int) {
+func (m *Matcher) matchExpr(expr string, str string, matchLen int) (bool, int) {
 	if len(expr) == 0 {
 		return true, matchLen
 	} else if isEnd(expr[0]) {
@@ -38,16 +41,16 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 	head, operator, rest := splitExpr(expr)
 
 	if isStar(operator) {
-		return matchStar(expr, str, matchLen)
+		return m.matchStar(expr, str, matchLen)
 	} else if isPlus(operator) {
-		return matchPlus(expr, str, matchLen)
+		return m.matchPlus(expr, str, matchLen)
 	} else if isQuestion(operator) {
-		return matchQuestion(expr, str, matchLen)
+		return m.matchQuestion(expr, str, matchLen)
 	} else if isAlternate(head) {
-		return matchAlternate(expr, str, matchLen)
+		return m.matchAlternate(expr, str, matchLen)
 	} else if isUnit(head) {
 		if doesUnitMatch(expr, str) {
-			return matchExpr(rest, str[1:], matchLen+1)
+			return m.matchExpr(rest, str[1:], matchLen+1)
 		}
 	} else {
 		fmt.Printf("unknown token in expr %s", expr)
@@ -57,24 +60,24 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 }
 
 // matchers //
-func matchStar(expr string, str string, matchLen int) (bool, int) {
-	return matchMultiple(expr, str, matchLen, 0, 0)
+func (m *Matcher) matchStar(expr string, str string, matchLen int) (bool, int) {
+	return m.matchMultiple(expr, str, matchLen, 0, 0)
 }
 
-func matchPlus(expr string, str string, matchLen int) (bool, int) {
-	return matchMultiple(expr, str, matchLen, 1, 0)
+func (m *Matcher) matchPlus(expr string, str string, matchLen int) (bool, int) {
+	return m.matchMultiple(expr, str, matchLen, 1, 0)
 }
 
-func matchQuestion(expr string, str string, matchLen int) (bool, int) {
-	return matchMultiple(expr, str, matchLen, 0, 1)
+func (m *Matcher) matchQuestion(expr string, str string, matchLen int) (bool, int) {
+	return m.matchMultiple(expr, str, matchLen, 0, 1)
 }
 
-func matchMultiple(expr string, str string, matchLen int, minMatchLen int, maxMatchLen int) (bool, int) {
+func (m *Matcher) matchMultiple(expr string, str string, matchLen int, minMatchLen int, maxMatchLen int) (bool, int) {
 	head, _, rest := splitExpr(expr)
 	submatchLen := -1
 	// TODO: check in which case (maxMatchLen == 0) is used
 	for maxMatchLen == 0 || (submatchLen < maxMatchLen) {
-		subexprMatched, _ := matchExpr(
+		subexprMatched, _ := m.matchExpr(
 			strings.Repeat(head, submatchLen+1), str, matchLen,
 		)
 		if subexprMatched {
@@ -85,7 +88,7 @@ func matchMultiple(expr string, str string, matchLen int, minMatchLen int, maxMa
 	}
 
 	for submatchLen >= minMatchLen {
-		matched, newMatchLen := matchExpr(
+		matched, newMatchLen := m.matchExpr(
 			strings.Repeat(head, submatchLen)+rest, str, matchLen,
 		)
 		if matched {
@@ -96,17 +99,18 @@ func matchMultiple(expr string, str string, matchLen int, minMatchLen int, maxMa
 	return false, 0
 }
 
-func matchAlternate(expr string, str string, matchLen int) (bool, int) {
+func (m *Matcher) matchAlternate(expr string, str string, matchLen int) (bool, int) {
 	head, _, rest := splitExpr(expr)
 	// options = splitAlternate(head)
 	options := strings.Split(head[1:len(head)-1], "|")
 
+	matched := false
+	minMatchLen := 0
 	for _, option := range options {
-		matched, minMatchLen := matchExpr(option+rest, str, matchLen)
-		//TODO: refactor with break and match/minMLen declared outside of loop
+		matched, minMatchLen = m.matchExpr(option+rest, str, matchLen)
 		if matched {
-			return matched, minMatchLen
+			break
 		}
 	}
-	return false, 0
+	return matched, minMatchLen
 }

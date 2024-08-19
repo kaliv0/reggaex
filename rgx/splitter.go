@@ -32,6 +32,6 @@ func splitExpr(expr string) (string, byte, string) {
 	return head, operator, rest
 }
 
-func splitSet(setHead string) string {
-	return setHead[1 : len(setHead)-1]
-}
+//func splitSet(setHead string) string {
+//	return setHead[1 : len(setHead)-1]
+//}

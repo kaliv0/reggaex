@@ -100,8 +100,8 @@ func doesUnitMatch(expr string, str string) bool {
 			return false
 		}
 	} else if isSet(head) {
-		setTerms := splitSet(head)
-		// setTerms := head[1 : len(head)-1]
+		//setTerms := splitSet(head)
+		setTerms := head[1 : len(head)-1]
 		return strings.ContainsRune(setTerms, rune(str[0]))
 	}
 	return false
