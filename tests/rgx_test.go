@@ -196,3 +196,36 @@ func TestNegSetFails(t *testing.T) {
 	matched, _, _ := rgx.Match(expr, str)
 	assert.False(t, matched)
 }
+
+// ranges
+func TestRange(t *testing.T) {
+	expr := `^[a-g]+$`
+	str := `bda`
+	matched, matchPos, matchLen := rgx.Match(expr, str)
+	expected := str[matchPos : matchPos+matchLen]
+	assert.True(t, matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestRangeFails(t *testing.T) {
+	expr := `^[a-g]+$`
+	str := `x`
+	matched, _, _ := rgx.Match(expr, str)
+	assert.False(t, matched)
+}
+
+func TestNegRange(t *testing.T) {
+	expr := `^[^a-c]+$`
+	str := `xyz`
+	matched, matchPos, matchLen := rgx.Match(expr, str)
+	expected := str[matchPos : matchPos+matchLen]
+	assert.True(t, matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestNegRangeFails(t *testing.T) {
+	expr := `^[^a-g]+$`
+	str := `ab`
+	matched, _, _ := rgx.Match(expr, str)
+	assert.False(t, matched)
+}

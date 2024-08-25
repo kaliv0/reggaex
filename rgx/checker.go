@@ -109,16 +109,26 @@ func doesUnitMatch(expr string, str string) bool {
 	} else if isEscapeSequence(head) {
 		return validateEscapeSequence(head, str)
 	} else if isSet(head) {
-		setTerms := splitSet(head)
-		if setTerms[0] == '^' {
-			return !strings.ContainsRune(setTerms, rune(str[0]))
-		}
-		return strings.ContainsRune(setTerms, rune(str[0]))
+		return doesSetMatch(head, str)
 	}
 	return false
 }
 
-// TODO: rename func
+func doesSetMatch(head string, str string) bool {
+	setTerms := splitSet(head)
+	curr := rune(str[0])
+	flag := true
+	if setTerms[0] == '^' {
+		flag = false
+	}
+	if idx := strings.IndexByte(setTerms, '-'); idx >= 0 {
+		rangeStart := rune(setTerms[idx-1])
+		rangeEnd := rune(setTerms[idx+1])
+		return (curr >= rangeStart && curr <= rangeEnd) == flag
+	}
+	return strings.ContainsRune(setTerms, curr) == flag
+}
+
 func validateEscapeSequence(head string, str string) bool {
 	if head == "\\w" {
 		return unicode.IsLetter(rune(str[0])) || unicode.IsDigit(rune(str[0])) || str[0] == '_'

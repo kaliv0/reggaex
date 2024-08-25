@@ -1,2 +1,3 @@
--add ranges [a-z], complex ones [a-z09]?, negations -> [^xyz]
+-add complex ranges [a-z0-9#@]?
+-add tests: operators, options
 -specify in README working features, NB: only for ASCII -> bytes vs runes
