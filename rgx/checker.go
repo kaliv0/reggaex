@@ -1,6 +1,8 @@
 package rgx
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -46,19 +48,36 @@ func isEscapeSequence(term string) bool {
 }
 
 func isOperator(b byte) bool {
-	return isStar(b) || isPlus(b) || isQuestion(b)
+	return isStar(string(b)) || isPlus(string(b)) || isQuestion(string(b))
 }
 
-func isStar(b byte) bool {
-	return b == '*'
+func isStar(b string) bool {
+	return b == "*"
 }
 
-func isPlus(b byte) bool {
-	return b == '+'
+func isPlus(b string) bool {
+	return b == "+"
 }
 
-func isQuestion(b byte) bool {
-	return b == '?'
+func isQuestion(b string) bool {
+	return b == "?"
+}
+
+func isOpenQuantifier(b byte) bool {
+	return b == '{'
+}
+
+func isCloseQuantifier(b byte) bool {
+	return b == '}'
+}
+
+// TODO: refactor -> return error and exit gracefully
+func isQuantifier(term string) (bool, int) {
+	val, err := strconv.Atoi(term)
+	if err != nil {
+		return false, 0
+	}
+	return true, val
 }
 
 func isLiteral(b byte) bool {
@@ -113,5 +132,13 @@ func evaluateEscapeSequence(head string, str string) bool {
 		return !unicode.IsSpace(rune(str[0]))
 	} else {
 		return false
+	}
+}
+
+func evaluateQuantifier(operator string) {
+	for _, c := range operator {
+		if !unicode.IsDigit(c) {
+			panic(fmt.Sprintf("supplied value is not a number\n"))
+		}
 	}
 }

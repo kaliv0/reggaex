@@ -1,6 +1,2 @@
 -add ranges [a-z], complex ones [a-z09]?, negations -> [^xyz]
--add counts [a-z]{3} -> similar to operators
 -specify in README working features, NB: only for ASCII -> bytes vs runes
-
--support \t, \n ??
--rename expr -> pattern ?

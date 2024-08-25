@@ -1,10 +1,12 @@
 package rgx
 
-import "strings"
+import (
+	"strings"
+)
 
-func splitExpr(expr string) (string, byte, string) {
+func splitExpr(expr string) (string, string, string) {
 	var head string
-	var operator byte
+	var operator string
 	var rest string
 	var lastExprPos int
 
@@ -23,8 +25,16 @@ func splitExpr(expr string) (string, byte, string) {
 	}
 
 	if lastExprPos < len(expr) && isOperator(expr[lastExprPos]) {
-		operator = expr[lastExprPos]
+		operator = string(expr[lastExprPos])
 		lastExprPos += 1
+	}
+
+	if lastExprPos < len(expr) && isOpenQuantifier(expr[lastExprPos]) {
+		closingQntPos := strings.IndexByte(expr, '}')
+		operator = expr[lastExprPos+1 : closingQntPos]
+		lastExprPos = closingQntPos + 1
+		//validate quantifier for early failure
+		evaluateQuantifier(operator)
 	}
 
 	rest = expr[lastExprPos:]

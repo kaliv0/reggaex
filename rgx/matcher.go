@@ -2,6 +2,7 @@ package rgx
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -41,6 +42,8 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 		return matchPlus(expr, str, matchLen)
 	} else if isQuestion(operator) {
 		return matchQuestion(expr, str, matchLen)
+	} else if ok, quantifier := isQuantifier(operator); ok {
+		return matchQuantifier(expr, str, matchLen, quantifier)
 	} else if isAlternate(head) {
 		return matchAlternate(expr, str, matchLen)
 	} else if isUnit(head) {
@@ -48,29 +51,32 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 			return matchExpr(rest, str[1:], matchLen+1)
 		}
 	} else {
-		// TODO: or return err?
+		// TODO: return err?
 		panic(fmt.Sprintf("unknown token in expr %s", expr))
 	}
 	return false, 0
 }
 
 func matchStar(expr string, str string, matchLen int) (bool, int) {
-	return matchMultiple(expr, str, matchLen, 0, 0)
+	return matchMultiple(expr, str, matchLen, 0, math.MaxInt)
 }
 
 func matchPlus(expr string, str string, matchLen int) (bool, int) {
-	return matchMultiple(expr, str, matchLen, 1, 0)
+	return matchMultiple(expr, str, matchLen, 1, math.MaxInt)
 }
 
 func matchQuestion(expr string, str string, matchLen int) (bool, int) {
 	return matchMultiple(expr, str, matchLen, 0, 1)
 }
 
+func matchQuantifier(expr string, str string, matchLen int, quantifier int) (bool, int) {
+	return matchMultiple(expr, str, matchLen, quantifier, quantifier)
+}
+
 func matchMultiple(expr string, str string, matchLen int, minMatchLen int, maxMatchLen int) (bool, int) {
 	head, _, rest := splitExpr(expr)
 	submatchLen := -1
-	// TODO: check in which case (maxMatchLen == 0) is used
-	for maxMatchLen == 0 || (submatchLen < maxMatchLen) {
+	for maxMatchLen == math.MaxInt || (submatchLen < maxMatchLen) {
 		subexprMatched, _ := matchExpr(
 			strings.Repeat(head, submatchLen+1), str, matchLen,
 		)

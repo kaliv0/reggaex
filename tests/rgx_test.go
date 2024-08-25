@@ -148,6 +148,22 @@ func TestNegWordCharFails(t *testing.T) {
 	assert.False(t, matched)
 }
 
+// quantifier
+func TestQuantifier(t *testing.T) {
+	expr := `^[ab]{10}$`
+	str := `aabbaaabba`
+	matched, matchPos, matchLen := rgx.Match(expr, str)
+	expected := str[matchPos : matchPos+matchLen]
+	assert.True(t, matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestInvalidQuantifier(t *testing.T) {
+	expr := `^[ab]{x}$`
+	str := `aa`
+	assert.Panics(t, func() { rgx.Match(expr, str) }) // TODO: test error message
+}
+
 // sets
 func TestSet(t *testing.T) {
 	expr := `^[abc]+$`
