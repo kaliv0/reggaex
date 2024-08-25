@@ -34,7 +34,7 @@ func splitExpr(expr string) (string, string, string) {
 		operator = expr[lastExprPos+1 : closingQntPos]
 		lastExprPos = closingQntPos + 1
 		//validate quantifier for early failure
-		evaluateQuantifier(operator)
+		validateQuantifier(operator)
 	}
 
 	rest = expr[lastExprPos:]

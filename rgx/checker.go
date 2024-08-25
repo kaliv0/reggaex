@@ -71,7 +71,6 @@ func isCloseQuantifier(b byte) bool {
 	return b == '}'
 }
 
-// TODO: refactor -> return error and exit gracefully
 func isQuantifier(term string) (bool, int) {
 	val, err := strconv.Atoi(term)
 	if err != nil {
@@ -108,16 +107,19 @@ func doesUnitMatch(expr string, str string) bool {
 	} else if isDot(head[0]) {
 		return true
 	} else if isEscapeSequence(head) {
-		return evaluateEscapeSequence(head, str)
+		return validateEscapeSequence(head, str)
 	} else if isSet(head) {
 		setTerms := splitSet(head)
+		if setTerms[0] == '^' {
+			return !strings.ContainsRune(setTerms, rune(str[0]))
+		}
 		return strings.ContainsRune(setTerms, rune(str[0]))
 	}
 	return false
 }
 
 // TODO: rename func
-func evaluateEscapeSequence(head string, str string) bool {
+func validateEscapeSequence(head string, str string) bool {
 	if head == "\\w" {
 		return unicode.IsLetter(rune(str[0])) || unicode.IsDigit(rune(str[0])) || str[0] == '_'
 	} else if head == "\\d" {
@@ -135,7 +137,7 @@ func evaluateEscapeSequence(head string, str string) bool {
 	}
 }
 
-func evaluateQuantifier(operator string) {
+func validateQuantifier(operator string) {
 	for _, c := range operator {
 		if !unicode.IsDigit(c) {
 			panic(fmt.Sprintf("supplied value is not a number\n"))

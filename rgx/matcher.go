@@ -24,7 +24,10 @@ func Match(expr, str string) (bool, int, int) {
 		matchPos += 1
 		matched, matchLen = matchExpr(expr, str[matchPos:], 0)
 	}
-	return matched, matchPos, matchLen
+	if matched {
+		return matched, matchPos, matchLen
+	}
+	return matched, 0, 0
 }
 
 func matchExpr(expr string, str string, matchLen int) (bool, int) {
@@ -51,7 +54,6 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 			return matchExpr(rest, str[1:], matchLen+1)
 		}
 	} else {
-		// TODO: return err?
 		panic(fmt.Sprintf("unknown token in expr %s", expr))
 	}
 	return false, 0

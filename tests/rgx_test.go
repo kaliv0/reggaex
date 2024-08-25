@@ -180,3 +180,19 @@ func TestSetFails(t *testing.T) {
 	matched, _, _ := rgx.Match(expr, str)
 	assert.False(t, matched)
 }
+
+func TestNegSet(t *testing.T) {
+	expr := `^[^abc]+$`
+	str := `xyz`
+	matched, matchPos, matchLen := rgx.Match(expr, str)
+	expected := str[matchPos : matchPos+matchLen]
+	assert.True(t, matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestNegSetFails(t *testing.T) {
+	expr := `^[^abc]+$`
+	str := `xaz`
+	matched, _, _ := rgx.Match(expr, str)
+	assert.False(t, matched)
+}
