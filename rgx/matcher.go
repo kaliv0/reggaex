@@ -1,14 +1,37 @@
 package rgx
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"strings"
 )
 
-func Match(expr, str string) (bool, int, int) {
+type MatchData struct {
+	Matched  bool
+	MatchPos int
+	MatchLen int
+}
+
+func Match(expr, str string) (data MatchData, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			switch x := r.(type) {
+			case string:
+				err = errors.New(x)
+			case error:
+				err = x
+			default:
+				err = errors.New("something went wrong")
+			}
+		}
+	}()
+	return match(expr, str), err
+}
+
+func match(expr, str string) MatchData {
 	if len(expr) == 0 || len(str) == 0 {
-		return false, 0, 0
+		return MatchData{false, 0, 0}
 	}
 
 	matched := false
@@ -17,7 +40,8 @@ func Match(expr, str string) (bool, int, int) {
 	maxMatchPos := len(str) - 1
 	if isStart(expr[0]) {
 		expr = expr[1:]
-		maxMatchPos = 0 // in this case the cursor shouldn't go beyond the first char without matching
+		// in this case the cursor shouldn't go beyond the first char without matching
+		maxMatchPos = 0
 	}
 
 	for !matched && matchPos <= maxMatchPos {
@@ -25,9 +49,9 @@ func Match(expr, str string) (bool, int, int) {
 		matched, matchLen = matchExpr(expr, str[matchPos:], 0)
 	}
 	if matched {
-		return matched, matchPos, matchLen
+		return MatchData{matched, matchPos, matchLen}
 	}
-	return matched, 0, 0
+	return MatchData{matched, 0, 0}
 }
 
 func matchExpr(expr string, str string, matchLen int) (bool, int) {
@@ -41,22 +65,26 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 
 	if isStar(operator) {
 		return matchStar(expr, str, matchLen)
-	} else if isPlus(operator) {
+	}
+	if isPlus(operator) {
 		return matchPlus(expr, str, matchLen)
-	} else if isQuestion(operator) {
+	}
+	if isQuestion(operator) {
 		return matchQuestion(expr, str, matchLen)
-	} else if ok, quantifier := isQuantifier(operator); ok {
+	}
+	if ok, quantifier := isQuantifier(operator); ok {
 		return matchQuantifier(expr, str, matchLen, quantifier)
-	} else if isAlternate(head) {
+	}
+	if isAlternate(head) {
 		return matchAlternate(expr, str, matchLen)
-	} else if isUnit(head) {
+	}
+	if isUnit(head) {
 		if doesUnitMatch(expr, str) {
 			return matchExpr(rest, str[1:], matchLen+1)
 		}
-	} else {
-		panic(fmt.Sprintf("unknown token in expr %s", expr))
+		return false, 0
 	}
-	return false, 0
+	panic(fmt.Sprintf("unexpected token in expr %s\n", expr))
 }
 
 func matchStar(expr string, str string, matchLen int) (bool, int) {

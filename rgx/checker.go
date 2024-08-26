@@ -164,7 +164,7 @@ func validateEscapeSequence(head string, str string) bool {
 func validateQuantifier(operator string) {
 	for _, c := range operator {
 		if !unicode.IsDigit(c) {
-			panic(fmt.Sprintf("supplied value is not a number\n"))
+			panic(fmt.Sprintf("supplied value %s is not a number\n", operator))
 		}
 	}
 }
