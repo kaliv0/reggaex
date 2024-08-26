@@ -1,3 +1,0 @@
--add complex ranges [a-z0-9#@]?
--add tests: operators, options
--specify in README working features, NB: only for ASCII -> bytes vs runes

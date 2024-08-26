@@ -42,7 +42,10 @@ func splitExpr(expr string) (string, string, string) {
 }
 
 func splitSet(head string) string {
-	return head[1 : len(head)-1]
+	if len(head) > 0 && head[0] == '[' && head[len(head)-1] == ']' {
+		return head[1 : len(head)-1]
+	}
+	return head
 }
 
 func splitAlternate(head string) []string {

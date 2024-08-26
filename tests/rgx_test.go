@@ -229,3 +229,35 @@ func TestNegRangeFails(t *testing.T) {
 	matched, _, _ := rgx.Match(expr, str)
 	assert.False(t, matched)
 }
+
+func TestDoubleRange(t *testing.T) {
+	expr := `^[a-g0-9]+$`
+	str := `ab23`
+	matched, matchPos, matchLen := rgx.Match(expr, str)
+	expected := str[matchPos : matchPos+matchLen]
+	assert.True(t, matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestDoubleNegRange(t *testing.T) {
+	expr := `^[^a-g0-9]+$`
+	str := `ab23`
+	matched, _, _ := rgx.Match(expr, str)
+	assert.False(t, matched)
+}
+
+func TestComplexRange(t *testing.T) {
+	expr := `^[a-g0-9#$%@]+$`
+	str := `ab23@`
+	matched, matchPos, matchLen := rgx.Match(expr, str)
+	expected := str[matchPos : matchPos+matchLen]
+	assert.True(t, matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestComplexNegRange(t *testing.T) {
+	expr := `^[^a-g0-9#$%@]+$`
+	str := `ab23@`
+	matched, _, _ := rgx.Match(expr, str)
+	assert.False(t, matched)
+}

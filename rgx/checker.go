@@ -109,24 +109,38 @@ func doesUnitMatch(expr string, str string) bool {
 	} else if isEscapeSequence(head) {
 		return validateEscapeSequence(head, str)
 	} else if isSet(head) {
-		return doesSetMatch(head, str)
+		return doesSetMatch(head, str, true)
 	}
 	return false
 }
 
-func doesSetMatch(head string, str string) bool {
+func doesSetMatch(head string, str string, flag bool) bool {
 	setTerms := splitSet(head)
 	curr := rune(str[0])
-	flag := true
+	flag = true
 	if setTerms[0] == '^' {
 		flag = false
 	}
 	if idx := strings.IndexByte(setTerms, '-'); idx >= 0 {
-		rangeStart := rune(setTerms[idx-1])
-		rangeEnd := rune(setTerms[idx+1])
-		return (curr >= rangeStart && curr <= rangeEnd) == flag
+		return doesRangeMatch(setTerms, str, idx, curr, flag)
 	}
 	return strings.ContainsRune(setTerms, curr) == flag
+}
+
+func doesRangeMatch(setTerms string, str string, idx int, curr rune, flag bool) bool {
+	rangeStart := rune(setTerms[idx-1])
+	rangeEnd := rune(setTerms[idx+1])
+	rest := ""
+	if len(setTerms) > idx+1 {
+		rest = setTerms[idx+2:]
+	}
+
+	result := (curr >= rangeStart && curr <= rangeEnd) == flag
+	if !result && len(rest) > 0 {
+		return doesSetMatch(rest, str, flag)
+	} else {
+		return result
+	}
 }
 
 func validateEscapeSequence(head string, str string) bool {
