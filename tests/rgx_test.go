@@ -12,7 +12,7 @@ func TestStrLimits(t *testing.T) {
 	expr := `^http://\w+.(com|net|org)[@/#]+.*$`
 	str := `http://qwerty123.com@hey/there`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -35,20 +35,18 @@ func TestNoStartLimit(t *testing.T) {
 	expr := `http://\w+.(com|net|org)[@/#]+.*$`
 	str := `xxxhttp://qwerty123.com@hey/there`
 	res, _ := rgx.Match(expr, str)
-	actual := str[res.MatchPos : res.MatchPos+res.MatchLen]
 	expected := `http://qwerty123.com@hey/there`
 	assert.True(t, res.Matched)
-	assert.Equal(t, actual, expected)
+	assert.Equal(t, expected, res.MatchStr)
 }
 
 func TestNoEndLimit(t *testing.T) {
 	expr := `^http://\w+.(com|net|org)[@/#]+`
 	str := `http://qwerty123.com@xxx`
 	res, _ := rgx.Match(expr, str)
-	actual := str[res.MatchPos : res.MatchPos+res.MatchLen]
 	expected := `http://qwerty123.com@`
 	assert.True(t, res.Matched)
-	assert.Equal(t, actual, expected)
+	assert.Equal(t, expected, res.MatchStr)
 }
 
 func TestInvalidToken(t *testing.T) {
@@ -59,12 +57,27 @@ func TestInvalidToken(t *testing.T) {
 	assert.Equal(t, expected, err)
 }
 
+// empty
+func TestEmptyExpr(t *testing.T) {
+	expr := ``
+	str := `http://qwerty123.com@xxx`
+	res, _ := rgx.Match(expr, str)
+	assert.False(t, res.Matched)
+}
+
+func TestEmptyStr(t *testing.T) {
+	expr := `[xyz]+`
+	str := ``
+	res, _ := rgx.Match(expr, str)
+	assert.False(t, res.Matched)
+}
+
 // escape sequences
 func TestWhitespace(t *testing.T) {
 	expr := `^\s[abc]+\s[xyz]+$`
 	str := ` abc	yzx`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -80,7 +93,7 @@ func TestDigit(t *testing.T) {
 	expr := `^\d+$`
 	str := `123`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -96,7 +109,7 @@ func TestWordChar(t *testing.T) {
 	expr := `^\w+$`
 	str := `xyz_a23`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -113,7 +126,7 @@ func TestNegWhitespace(t *testing.T) {
 	expr := `^\S+$`
 	str := `xzy123./?`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -129,7 +142,7 @@ func TestNegDigit(t *testing.T) {
 	expr := `^\D+$`
 	str := `xzy ./?`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -145,7 +158,7 @@ func TestNegWordChar(t *testing.T) {
 	expr := `^\W+$`
 	str := `: ./?`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -162,7 +175,7 @@ func TestQuantifier(t *testing.T) {
 	expr := `^[ab]{10}$`
 	str := `aabbaaabba`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -180,7 +193,7 @@ func TestSet(t *testing.T) {
 	expr := `^[abc]+$`
 	str := `aabcbba`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -196,7 +209,7 @@ func TestNegSet(t *testing.T) {
 	expr := `^[^abc]+$`
 	str := `xyz`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -213,7 +226,7 @@ func TestRange(t *testing.T) {
 	expr := `^[a-g]+$`
 	str := `bda`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -229,7 +242,7 @@ func TestNegRange(t *testing.T) {
 	expr := `^[^a-c]+$`
 	str := `xyz`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -245,7 +258,7 @@ func TestDoubleRange(t *testing.T) {
 	expr := `^[a-g0-9]+$`
 	str := `ab23`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -261,7 +274,7 @@ func TestComplexRange(t *testing.T) {
 	expr := `^[a-g0-9#$%@]+$`
 	str := `ab23@`
 	res, _ := rgx.Match(expr, str)
-	expected := str[res.MatchPos : res.MatchPos+res.MatchLen]
+	expected := res.MatchStr
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, str)
 }
@@ -272,3 +285,7 @@ func TestComplexNegRange(t *testing.T) {
 	res, _ := rgx.Match(expr, str)
 	assert.False(t, res.Matched)
 }
+
+// options
+
+//operators

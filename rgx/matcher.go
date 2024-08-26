@@ -9,8 +9,7 @@ import (
 
 type MatchData struct {
 	Matched  bool
-	MatchPos int
-	MatchLen int
+	MatchStr string
 }
 
 func Match(expr, str string) (data MatchData, err error) {
@@ -31,7 +30,7 @@ func Match(expr, str string) (data MatchData, err error) {
 
 func match(expr, str string) MatchData {
 	if len(expr) == 0 || len(str) == 0 {
-		return MatchData{false, 0, 0}
+		return MatchData{false, ""}
 	}
 
 	matched := false
@@ -49,9 +48,9 @@ func match(expr, str string) MatchData {
 		matched, matchLen = matchExpr(expr, str[matchPos:], 0)
 	}
 	if matched {
-		return MatchData{matched, matchPos, matchLen}
+		return MatchData{matched, str[matchPos : matchPos+matchLen]}
 	}
-	return MatchData{matched, 0, 0}
+	return MatchData{matched, ""}
 }
 
 func matchExpr(expr string, str string, matchLen int) (bool, int) {
