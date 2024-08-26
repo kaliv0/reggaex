@@ -8,9 +8,10 @@ import (
 	"reggaex/rgx"
 )
 
+// limits
 func TestStrLimits(t *testing.T) {
-	expr := `^http://\w+.(com|net|org)[@/#]+.*$`
-	str := `http://qwerty123.com@hey/there`
+	expr := `^https://\w+.(com|net|org)[@/#]+.*$`
+	str := `https://qwerty123.com@hey/there`
 	res, _ := rgx.Match(expr, str)
 	expected := res.MatchStr
 	assert.True(t, res.Matched)
@@ -18,33 +19,33 @@ func TestStrLimits(t *testing.T) {
 }
 
 func TestStrLimitsFailsAtStart(t *testing.T) {
-	expr := `^http://w+.(com|net|org)[@/#]+.*$`
-	str := `xxxhttp://qwerty123.com@hey/there`
+	expr := `^https://w+.(com|net|org)[@/#]+.*$`
+	str := `xxxhttps://qwerty123.com@hey/there`
 	res, _ := rgx.Match(expr, str)
 	assert.False(t, res.Matched)
 }
 
 func TestStrLimitsFailsAtEnd(t *testing.T) {
-	expr := `^http://\w+.(com|net|org)[@/#]+[ab]$`
-	str := `http://qwerty123.com@xxx`
+	expr := `^https://\w+.(com|net|org)[@/#]+[ab]$`
+	str := `https://qwerty123.com@xxx`
 	res, _ := rgx.Match(expr, str)
 	assert.False(t, res.Matched)
 }
 
 func TestNoStartLimit(t *testing.T) {
-	expr := `http://\w+.(com|net|org)[@/#]+.*$`
-	str := `xxxhttp://qwerty123.com@hey/there`
+	expr := `https://\w+.(com|net|org)[@/#]+.*$`
+	str := `xxxhttps://qwerty123.com@hey/there`
 	res, _ := rgx.Match(expr, str)
-	expected := `http://qwerty123.com@hey/there`
+	expected := `https://qwerty123.com@hey/there`
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, res.MatchStr)
 }
 
 func TestNoEndLimit(t *testing.T) {
-	expr := `^http://\w+.(com|net|org)[@/#]+`
-	str := `http://qwerty123.com@xxx`
+	expr := `^https://\w+.(com|net|org)[@/#]+`
+	str := `https://qwerty123.com@xxx`
 	res, _ := rgx.Match(expr, str)
-	expected := `http://qwerty123.com@`
+	expected := `https://qwerty123.com@`
 	assert.True(t, res.Matched)
 	assert.Equal(t, expected, res.MatchStr)
 }
@@ -60,7 +61,7 @@ func TestInvalidToken(t *testing.T) {
 // empty
 func TestEmptyExpr(t *testing.T) {
 	expr := ``
-	str := `http://qwerty123.com@xxx`
+	str := `https://qwerty123.com@xxx`
 	res, _ := rgx.Match(expr, str)
 	assert.False(t, res.Matched)
 }
@@ -68,6 +69,23 @@ func TestEmptyExpr(t *testing.T) {
 func TestEmptyStr(t *testing.T) {
 	expr := `[xyz]+`
 	str := ``
+	res, _ := rgx.Match(expr, str)
+	assert.False(t, res.Matched)
+}
+
+// dot
+func TestDot(t *testing.T) {
+	expr := `^.{2}y$`
+	str := `x2y`
+	res, _ := rgx.Match(expr, str)
+	expected := res.MatchStr
+	assert.True(t, res.Matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestDotFails(t *testing.T) {
+	expr := `^.{2}y$`
+	str := `1xx`
 	res, _ := rgx.Match(expr, str)
 	assert.False(t, res.Matched)
 }
@@ -170,24 +188,6 @@ func TestNegWordCharFails(t *testing.T) {
 	assert.False(t, res.Matched)
 }
 
-// quantifier
-func TestQuantifier(t *testing.T) {
-	expr := `^[ab]{10}$`
-	str := `aabbaaabba`
-	res, _ := rgx.Match(expr, str)
-	expected := res.MatchStr
-	assert.True(t, res.Matched)
-	assert.Equal(t, expected, str)
-}
-
-func TestInvalidQuantifier(t *testing.T) {
-	expr := `^[ab]{x}$`
-	str := `aa`
-	_, err := rgx.Match(expr, str)
-	expected := errors.New("supplied value x is not a number\n")
-	assert.Equal(t, expected, err)
-}
-
 // sets
 func TestSet(t *testing.T) {
 	expr := `^[abc]+$`
@@ -287,5 +287,90 @@ func TestComplexNegRange(t *testing.T) {
 }
 
 // options
+func TestOptions(t *testing.T) {
+	expr := `^(foo|bar)$`
+	str := `foo`
+	res, _ := rgx.Match(expr, str)
+	expected := res.MatchStr
+	assert.True(t, res.Matched)
+	assert.Equal(t, expected, str)
+}
 
-//operators
+func TestOptionsFails(t *testing.T) {
+	expr := `^(foo|bar)$`
+	str := `fizzbuzz`
+	res, _ := rgx.Match(expr, str)
+	assert.False(t, res.Matched)
+}
+
+// operators
+func TestPlus(t *testing.T) {
+	expr := `^[ab]+$`
+	for _, str := range []string{"a", "ab", "ababbababbab"} {
+		res, _ := rgx.Match(expr, str)
+		expected := res.MatchStr
+		assert.True(t, res.Matched)
+		assert.Equal(t, expected, str)
+	}
+}
+
+func TestPlusFails(t *testing.T) {
+	expr := `^[ab]+$`
+	for _, str := range []string{"", "xyz"} {
+		res, _ := rgx.Match(expr, str)
+		assert.False(t, res.Matched)
+	}
+}
+
+func TestStar(t *testing.T) {
+	expr := `^x[yz]*$`
+	for _, str := range []string{"x", "xy", "xyz", "xyzzzzyzy"} {
+		res, _ := rgx.Match(expr, str)
+		expected := res.MatchStr
+		assert.True(t, res.Matched)
+		assert.Equal(t, expected, str)
+	}
+}
+
+func TestStarFails(t *testing.T) {
+	expr := `^[ab]*$`
+	str := `xyz`
+	res, _ := rgx.Match(expr, str)
+	assert.False(t, res.Matched)
+}
+
+func TestQuestion(t *testing.T) {
+	expr := `^x[yz]?$`
+	for _, str := range []string{"x", "xy"} {
+		res, _ := rgx.Match(expr, str)
+		expected := res.MatchStr
+		assert.True(t, res.Matched)
+		assert.Equal(t, expected, str)
+	}
+}
+
+func TestQuestionFails(t *testing.T) {
+	expr := `^x[yz]?$`
+	for _, str := range []string{"xyy", "xab"} {
+		res, _ := rgx.Match(expr, str)
+		assert.False(t, res.Matched)
+	}
+}
+
+// quantifier
+func TestQuantifier(t *testing.T) {
+	expr := `^[ab]{10}$`
+	str := `aabbaaabba`
+	res, _ := rgx.Match(expr, str)
+	expected := res.MatchStr
+	assert.True(t, res.Matched)
+	assert.Equal(t, expected, str)
+}
+
+func TestInvalidQuantifier(t *testing.T) {
+	expr := `^[ab]{x}$`
+	str := `aa`
+	_, err := rgx.Match(expr, str)
+	expected := errors.New("supplied value x is not a number\n")
+	assert.Equal(t, expected, err)
+}
