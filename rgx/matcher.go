@@ -83,7 +83,7 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 		}
 		return false, 0
 	}
-	panic(fmt.Sprintf("unexpected token in expr %s\n", expr))
+	panic(fmt.Sprintf("unexpected token in expr '%s'", expr))
 }
 
 func matchStar(expr string, str string, matchLen int) (bool, int) {

@@ -19,7 +19,7 @@ func TestStrLimits(t *testing.T) {
 }
 
 func TestStrLimitsFailsAtStart(t *testing.T) {
-	expr := `^https://w+.(com|net|org)[@/#]+.*$`
+	expr := `^https://\w+.(com|net|org)[@/#]+.*$`
 	str := `xxxhttps://qwerty123.com@hey/there`
 	res, _ := rgx.Match(expr, str)
 	assert.False(t, res.Matched)
@@ -54,7 +54,7 @@ func TestInvalidToken(t *testing.T) {
 	expr := `^]ab$`
 	str := `aa`
 	_, err := rgx.Match(expr, str)
-	expected := errors.New("unexpected token in expr ]ab$\n")
+	expected := errors.New("unexpected token in expr ']ab$'")
 	assert.Equal(t, expected, err)
 }
 
@@ -371,6 +371,6 @@ func TestInvalidQuantifier(t *testing.T) {
 	expr := `^[ab]{x}$`
 	str := `aa`
 	_, err := rgx.Match(expr, str)
-	expected := errors.New("supplied value x is not a number\n")
+	expected := errors.New("supplied value 'x' is not a number")
 	assert.Equal(t, expected, err)
 }

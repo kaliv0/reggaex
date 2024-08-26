@@ -84,7 +84,8 @@ func isLiteral(b byte) bool {
 }
 
 func isNonWordSymbol(b byte) bool {
-	return b == ' ' || b == ':' || b == '/'
+	// other symbols like '+' which have double meaning could be escaped if put inside square brackets
+	return strings.ContainsRune(" ,:;~!@#%&/|=-_", rune(b))
 }
 
 func isDot(b byte) bool {
@@ -164,7 +165,7 @@ func validateEscapeSequence(head string, str string) bool {
 func validateQuantifier(operator string) {
 	for _, c := range operator {
 		if !unicode.IsDigit(c) {
-			panic(fmt.Sprintf("supplied value %s is not a number\n", operator))
+			panic(fmt.Sprintf("supplied value '%s' is not a number", operator))
 		}
 	}
 }
