@@ -61,7 +61,6 @@ func matchExpr(expr string, str string, matchLen int) (bool, int) {
 	}
 
 	head, operator, rest := splitExpr(expr)
-
 	if isStar(operator) {
 		return matchStar(expr, str, matchLen)
 	}

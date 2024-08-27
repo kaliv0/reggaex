@@ -102,7 +102,6 @@ func doesUnitMatch(expr string, str string) bool {
 	}
 
 	head, _, _ := splitExpr(expr)
-
 	if isLiteral(head[0]) {
 		return expr[0] == str[0]
 	} else if isDot(head[0]) {
@@ -145,19 +144,20 @@ func doesRangeMatch(setTerms string, str string, idx int, curr rune, flag bool) 
 }
 
 func validateEscapeSequence(head string, str string) bool {
-	if head == "\\w" {
+	switch head {
+	case "\\w":
 		return unicode.IsLetter(rune(str[0])) || unicode.IsDigit(rune(str[0])) || str[0] == '_'
-	} else if head == "\\d" {
+	case "\\d":
 		return unicode.IsDigit(rune(str[0]))
-	} else if head == "\\s" {
+	case "\\s":
 		return unicode.IsSpace(rune(str[0]))
-	} else if head == "\\W" {
+	case "\\W":
 		return !unicode.IsLetter(rune(str[0])) && !unicode.IsDigit(rune(str[0])) && str[0] != '_'
-	} else if head == "\\D" {
+	case "\\D":
 		return !unicode.IsDigit(rune(str[0]))
-	} else if head == "\\S" {
+	case "\\S":
 		return !unicode.IsSpace(rune(str[0]))
-	} else {
+	default:
 		return false
 	}
 }
